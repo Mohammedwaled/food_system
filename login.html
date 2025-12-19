@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Welcome Back</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="wave-header">Login</div>
+        
+        <div class="form-content">
+            <h2>Welcome Back</h2>
+            
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="email" id="emailInput" placeholder="Username / Email" required>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="passwordInput" placeholder="Password" required>
+                    <i class="icon fas fa-lock"></i>
+                </div>
+                
+                <p class="link-text">
+                    <a href="#">Forgot Password?</a>
+                </p>
+                
+                <button type="submit">Login</button>
+            </form>
+            
+            <p class="bottom-link">
+                Don't have an account? 
+                <a href="signup.html">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            //  مبتخلكش تعمل ريلود
+
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+
+            try {
+                const response = await fetch('login_process.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: email, 
+                        password: password 
+                    })
+                });
+
+                const res = await response.text();//منتظر الرد من السيرفر
+
+                if (res.trim() === "success") { 
+                    alert("Login Successful! Redirecting to Home...");
+                    window.location.href = "home.html"; 
+                } else {
+                    alert(res);
+                }
+            } catch (error) {
+                alert("Connection Error! Make sure XAMPP is running and use http://localhost/ link.");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure Payment</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 380px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        label { font-size: 14px; color: #666; font-weight: bold; }
+        input { width: 100%; padding: 12px; margin: 8px 0 18px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: #ff4b2b; outline: none; box-shadow: 0 0 5px rgba(255, 75, 43, 0.2); }
+        .row { display: flex; gap: 15px; }
+        .row div { flex: 1; }
+        .btn { background: #ff4b2b; color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+        .btn:hover { background: #ff416c; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Secure Payment</h2>
+    
+    <label>Cardholder Name</label>
+    <input type="text" id="c_name" placeholder="Enter your name">
+    
+    <label>Card Number</label>
+    <input type="text" id="c_number" placeholder="0000 0000 0000 0000" maxlength="19">
+    
+    <div class="row">
+        <div>
+            <label>Expiry Date</label>
+            <input type="text" id="exp_date" placeholder="MM/YY" maxlength="5">
+        </div>
+        <div>
+            <label>CVV</label>
+            <input type="password" id="cvv" placeholder="***" maxlength="3">
+        </div>
+    </div>
+    
+    <button type="button" class="btn" id="payBtn">Confirm Payment</button>
+</div>
+
+<script>
+    // 1. تنسيق رقم الكارت تلقائياً (مسافة بعد كل 4 أرقام)
+    document.getElementById('c_number').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = "";
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formattedValue += " ";
+            }
+            formattedValue += value[i];
+        }
+        e.target.value = formattedValue.substring(0, 19); 
+    });
+
+    // 2. تنسيق تاريخ الانتهاء تلقائياً (MM/YY)
+    document.getElementById('exp_date').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        } else {
+            e.target.value = value;
+        }
+    });
+
+    // 3. تحديد الـ CVV بـ 3 أرقام فقط
+    document.getElementById('cvv').addEventListener('input', function (e) {
+        e.target.value = e.target.value.replace(/\D/g, '').substring(0, 3);
+    });
+
+    // 4. كود إرسال البيانات للـ PHP
+    document.getElementById('payBtn').addEventListener('click', function() {
+        const name = document.getElementById('c_name').value;
+        const card = document.getElementById('c_number').value;
+        const exp = document.getElementById('exp_date').value;
+        const cvv = document.getElementById('cvv').value;
+
+        // التأكد من أن كل الخانات مليانة
+        if(!name || card.length < 19 || exp.length < 5 || cvv.length < 3) {
+            alert("Please complete all card details correctly!");
+            return;
+        }
+
+        fetch('save_payment.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                cardholder_name: name, 
+                card_number: card 
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === "success") {
+                alert("Payment Saved Successfully!");
+                window.location.href = "home.html";
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Server Error! Check console.");
+        });
+    });
+</script>
+
+</body>
+</html>
